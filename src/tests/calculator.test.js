@@ -34,7 +34,7 @@ describe('Calculator CLI', () => {
   });
 
   test('invalid operator', () => {
-    expect(runCalc(2, '^', 3)).toBe('Error: Supported operators are +, -, *, /.');
+    expect(runCalc(2, '@', 3)).toBe('Error: Supported operators are +, -, *, /, %, ^, sqrt');
   });
 
   test('invalid operands', () => {
@@ -44,6 +44,43 @@ describe('Calculator CLI', () => {
 
   test('missing arguments', () => {
     const { stderr } = require('child_process').spawnSync('node', ['src/calculator.js', '2', '+']);
-    expect(stderr.toString().trim()).toBe('Usage: node calculator.js <number1> <operator> <number2>');
+    expect(stderr.toString().trim()).toBe('Usage: node calculator.js <number1> <operator> <number2> OR node calculator.js sqrt <number>');
+  });
+
+  test('modulo operation', () => {
+    expect(runCalc(5, '%', 2)).toBe('Result: 1');
+    expect(runCalc(10, '%', 3)).toBe('Result: 1');
+  });
+
+  test('modulo by zero', () => {
+    expect(runCalc(5, '%', 0)).toBe('Error: Division by zero is not allowed.');
+  });
+
+  test('power operation', () => {
+    expect(runCalc(2, '^', 3)).toBe('Result: 8');
+    expect(runCalc(4, '^', 0.5)).toBe('Result: 2');
+  });
+
+  test('square root operation', () => {
+    const runSqrt = n => {
+      try {
+        return execSync(`node src/calculator.js sqrt ${n}`, { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim();
+      } catch (e) {
+        return e.stderr ? e.stderr.toString().trim() : '';
+      }
+    };
+    expect(runSqrt(16)).toBe('Result: 4');
+    expect(runSqrt(2.25)).toBe('Result: 1.5');
+  });
+
+  test('square root of negative number', () => {
+    const runSqrt = n => {
+      try {
+        return execSync(`node src/calculator.js sqrt ${n}`, { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim();
+      } catch (e) {
+        return e.stderr ? e.stderr.toString().trim() : '';
+      }
+    };
+    expect(runSqrt(-9)).toBe('Error: Cannot take square root of a negative number.');
   });
 });
